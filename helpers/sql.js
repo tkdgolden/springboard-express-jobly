@@ -4,6 +4,7 @@ const { BadRequestError } = require("../expressError");
  * Convert js naming conventions to the corresponding sql column names for each key value pair
  * 
  * @param {object} dataToUpdate new keys and values to put in db
+ *      can include { firstName, lastName, password, email, isAdmin }
  * @param {object} jsToSql key names mapped to their sql column 
  * 
  * @returns setCols is a string of the sql column names

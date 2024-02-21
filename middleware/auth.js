@@ -53,7 +53,23 @@ function ensureAdmin(req, res, next) {
     if (!res.locals.user.isAdmin) throw new UnauthorizedError();
     return next();
   } catch (err) {
-    console.log("here", req.url, req.method, err);
+    return next(err);
+  }
+}
+
+/** Middleware to use when they must be admin user or the correct currently logged in user.
+ *
+ * If not, raises Unauthorized.
+ */
+
+function ensureCurrentOrAdmin(req, res, next) {
+  try {
+    if (!res.locals.user) throw new UnauthorizedError();
+    const isAdmin = res.locals.user.isAdmin;
+    const sameUser = (req.params.username === res.locals.user.username);
+    if (!isAdmin && !sameUser) throw new UnauthorizedError();
+    return next();
+  } catch (err) {
     return next(err);
   }
 }
@@ -62,5 +78,6 @@ function ensureAdmin(req, res, next) {
 module.exports = {
   authenticateJWT,
   ensureLoggedIn,
-  ensureAdmin
+  ensureAdmin,
+  ensureCurrentOrAdmin
 };

@@ -28,7 +28,7 @@ describe("sqlForPartialUpdate", function () {
         expect(values).toEqual(["Sarah", "Michaels", "sarah", "email@email.com", true]);
     });
 
-    test("no data error", function () {
+    test("error no data", function () {
         const inputData = {};
         const sqlFormat = { firstName: "first_name" };
         expect(() => {

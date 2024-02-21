@@ -14,6 +14,8 @@ const companyUpdateSchema = require("../schemas/companyUpdate.json");
 
 const router = new express.Router();
 
+const authorizedFilters = ["nameLike", "minEmployees", "maxEmployees"];
+
 
 /** POST / { company } =>  { company }
  *
@@ -52,7 +54,14 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
 
 router.get("/", async function (req, res, next) {
   try {
-    const companies = await Company.findAll();
+    let filters = {};
+    for (const each in req.body) {
+      if (!authorizedFilters.includes(each)) {
+        throw new BadRequestError("Invalid filter: " + each);
+      }
+      filters[each] = req.body[each];
+    }
+    const companies = await Company.findAll(filters);
     return res.json({ companies });
   } catch (err) {
     return next(err);

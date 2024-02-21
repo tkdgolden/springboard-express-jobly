@@ -44,20 +44,51 @@ class Company {
     return company;
   }
 
-  /** Find all companies.
-   *
-   * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
-   * */
+  /**
+   * Selects and returns companies objects, may be passed an optional filter object
+   * 
+   * filter can contain: { nameLike, minEmployees, maxEmployees }
+   * 
+   * @param {object} filters - optional - name and value of the given filters
+   * @returns array of objects for matching companies
+   */
 
-  static async findAll() {
+  static async findAll(filters) {
+    let where = "";
+    if (filters){
+      const keys = Object.keys(filters);
+      if (keys.length !== 0){
+        where += "WHERE ";
+        let clauses = [];
+        if ("nameLike" in filters) {
+          clauses.push("name ILIKE '%" + filters.nameLike + "%' ");
+        }
+        if ("minEmployees" in filters) {
+          if ("maxEmployees" in filters) {
+            if (filters.minEmployees >= filters.maxEmployees) {
+              throw new BadRequestError("minEmployees must be less than maxEmployees");
+            }
+            clauses.push("num_employees BETWEEN " + filters.minEmployees + " AND " + filters.maxEmployees + " ");
+          }
+          else {
+            clauses.push("num_employees >= " + filters.minEmployees + " ");
+          }
+        }
+        else if ("maxEmployees" in filters) {
+          clauses.push("num_employees <= " + filters.maxEmployees + " ");
+        }
+        const stringClauses = clauses.join("AND ");
+        where += stringClauses;
+      }
+    }
     const companiesRes = await db.query(
           `SELECT handle,
                   name,
                   description,
                   num_employees AS "numEmployees",
                   logo_url AS "logoUrl"
-           FROM companies
-           ORDER BY name`);
+           FROM companies ` + where + 
+           `ORDER BY name`);
     return companiesRes.rows;
   }
 

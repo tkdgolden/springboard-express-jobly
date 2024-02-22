@@ -214,15 +214,19 @@ class User {
    * returns undefined
    */
   static async apply(username, jobId) {
-
-    let result = await db.query(
-      `INSERT INTO applications (username, job_id) 
-      VALUES ($1, $2) 
-      RETURNING job_id`,
-      [username, jobId]
-    );
-
-    if (!result) throw new NotFoundError('Error with insert');
+    try {    
+      let result = await db.query(
+        `INSERT INTO applications (username, job_id) 
+        VALUES ($1, $2) 
+        RETURNING job_id`,
+        [username, jobId]
+      );
+      if (!result) throw new NotFoundError('Error with insert');
+      return result.rows[0].job_id;
+    }
+    catch (err) {
+      throw new NotFoundError('Error with insert');
+    }
   }
 }
 

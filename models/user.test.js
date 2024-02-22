@@ -7,6 +7,8 @@ const {
 } = require("../expressError");
 const db = require("../db.js");
 const User = require("./user.js");
+const Job = require("./job.js");
+
 const {
   commonBeforeAll,
   commonBeforeEach,
@@ -132,7 +134,7 @@ describe("findAll", function () {
 /************************************** get */
 
 describe("get", function () {
-  test("works", async function () {
+  test("works user with no jobs", async function () {
     let user = await User.get("u1");
     expect(user).toEqual({
       username: "u1",
@@ -140,6 +142,21 @@ describe("get", function () {
       lastName: "U1L",
       email: "u1@email.com",
       isAdmin: false,
+      jobs: []
+    });
+  });
+
+  test("works user with jobs", async function () {
+    let job = await Job.create(newJob);
+    await User.apply("u1", job.id);
+    let user = await User.get("u1");
+    expect(user).toEqual({
+      username: "u1",
+      firstName: "U1F",
+      lastName: "U1L",
+      email: "u1@email.com",
+      isAdmin: false,
+      jobs: [{job_id: job.id}]
     });
   });
 
@@ -164,18 +181,18 @@ describe("update", function () {
   };
 
   test("works", async function () {
-    let job = await User.update("u1", updateData);
-    expect(job).toEqual({
+    let user = await User.update("u1", updateData);
+    expect(user).toEqual({
       username: "u1",
       ...updateData,
     });
   });
 
   test("works: set password", async function () {
-    let job = await User.update("u1", {
+    let user = await User.update("u1", {
       password: "new",
     });
-    expect(job).toEqual({
+    expect(user).toEqual({
       username: "u1",
       firstName: "U1F",
       lastName: "U1L",
@@ -226,5 +243,39 @@ describe("remove", function () {
     } catch (err) {
       expect(err instanceof NotFoundError).toBeTruthy();
     }
+  });
+});
+
+
+/************************************* apply */
+
+const newJob = {
+  title: "new",
+  salary: 100,
+  equity: "0.5",
+  companyHandle: "c1"
+};
+
+describe("apply", function () {
+  test("works", async function () {
+    let job = await Job.create(newJob);
+    await User.apply("u1", job.id);
+    let result = await db.query(
+      `SELECT * FROM applications`
+    );
+    expect(result.rows).toEqual([{username: "u1", job_id: expect.any(Number)}]);
+  });
+
+  test("error no user", async function () {
+    let job = await Job.create(newJob);
+    expect(async () => {
+      await User.apply("u12", job.id);
+    }).rejects.toThrow();
+  });
+
+  test("error no job", async function () {
+    expect(async () => {
+      await User.apply("u1", 999999999);
+    }).rejects.toThrow();
   });
 });

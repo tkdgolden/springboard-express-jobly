@@ -67,7 +67,6 @@ class Job {
         where += stringClauses;
       }
     }
-    console.log(where);
     const jobsRes = await db.query(
           `SELECT id,
                 title, 

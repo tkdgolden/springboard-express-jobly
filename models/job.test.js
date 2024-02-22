@@ -26,7 +26,6 @@ const newJob = {
 
 describe("create", function () {
 
-
     test("works", async function () {
         let job = await Job.create(newJob);
         expect(job).toEqual(expect.objectContaining(newJob));

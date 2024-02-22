@@ -28,6 +28,16 @@ async function commonBeforeAll() {
         await bcrypt.hash("password1", BCRYPT_WORK_FACTOR),
         await bcrypt.hash("password2", BCRYPT_WORK_FACTOR),
       ]);
+
+  await db.query(`
+      INSERT INTO jobs (title, 
+        salary, 
+        equity, 
+        company_handle)
+      VALUES ('j1', 100, 0.25, 'c1'),
+             ('j2', 200, 0.5, 'c2'),
+             ('h3', 300, 0.66, 'c3')
+      RETURNING id`);
 }
 
 async function commonBeforeEach() {

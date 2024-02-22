@@ -295,6 +295,7 @@ describe("GET /users/:username", function () {
         lastName: "U1L",
         email: "user1@user.com",
         isAdmin: false,
+        jobs: []
       },
     });
   });
@@ -310,6 +311,7 @@ describe("GET /users/:username", function () {
         lastName: "U1L",
         email: "user1@user.com",
         isAdmin: false,
+        jobs: []
       },
     });
   });
@@ -325,6 +327,35 @@ describe("GET /users/:username", function () {
       .get(`/users/u1`)
       .set("authorization", `Bearer ${u3Token}`);
     expect(resp.statusCode).toEqual(401);
+  });
+
+  test("works for user with applications", async function () {
+    const newJob = {
+      title: "new",
+      salary: 100,
+      equity: 0.5,
+      companyHandle: "c1"
+    };
+    const job = await request(app)
+      .post("/jobs")
+      .send(newJob)
+      .set("authorization", `Bearer ${u2Token}`);
+    await request(app)
+      .post(`/users/u2/jobs/${job.body.job.id}`)
+      .set("authorization", `Bearer ${u2Token}`);
+    const resp = await request(app)
+      .get(`/users/u1`)
+      .set("authorization", `Bearer ${u2Token}`);
+    expect(resp.body).toEqual({
+      user: {
+        username: "u1",
+        firstName: "U1F",
+        lastName: "U1L",
+        email: "user1@user.com",
+        isAdmin: false,
+        jobs: []
+      },
+    });
   });
 
   test("not found if user not found", async function () {

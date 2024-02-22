@@ -135,9 +135,22 @@ class User {
         [username],
     );
 
-    const user = userRes.rows[0];
+    const userInfo = userRes.rows[0];
 
-    if (!user) throw new NotFoundError(`No user: ${username}`);
+    if (!userInfo) throw new NotFoundError(`No user: ${username}`);
+
+    const appliedJobs = await db.query(
+      `SELECT job_id FROM applications WHERE username = $1`, [username]
+    );
+    
+    const user = {
+      username: userInfo.username,
+      firstName: userInfo.firstName,
+      lastName: userInfo.lastName,
+      email: userInfo.email,
+      isAdmin: userInfo.isAdmin,
+      jobs: appliedJobs.rows
+    }
 
     return user;
   }

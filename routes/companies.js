@@ -62,7 +62,7 @@ router.get("/", async function (req, res, next) {
       filters[each] = req.body[each];
     }
     const companies = await Company.findAll(filters);
-    return res.json({ companies });
+    return res.json({ companies: companies });
   } catch (err) {
     return next(err);
   }

@@ -36,7 +36,7 @@ async function commonBeforeAll() {
         company_handle)
       VALUES ('j1', 100, 0.25, 'c1'),
              ('j2', 200, 0.5, 'c2'),
-             ('h3', 300, 0.66, 'c3')
+             ('h3', 300, 0, 'c3')
       RETURNING id`);
 }
 

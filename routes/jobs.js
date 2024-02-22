@@ -14,6 +14,8 @@ const jobUpdateSchema = require("../schemas/jobUpdate.json");
 
 const router = new express.Router();
 
+const authorizedFilters = ["title", "minSalary", "hasEquity"];
+
 /** POST / { job } =>  { job }
  *
  * company should be { title, salary, equity, companyHandle }
@@ -40,13 +42,24 @@ router.post("/", ensureAdmin, async function (req, res, next) {
 /** GET /  =>
  *   Returns { jobs: [ { id, title, salary, equity, companyHandle }, ...] }
  *
+ * Can filter on provided search filters:
+ * - title (will find case-insensitive, partial matches)
+ * - minSalary
+ * - hasEquity (true returns nonzero, false returns all-doesnt filter)
  *
  * Authorization required: none
  */
 
 router.get("/", async function (req, res, next) {
   try {
-    const jobs = await Job.findAll();
+    let filters = {};
+    for (const each in req.body) {
+      if (!authorizedFilters.includes(each)) {
+        throw new BadRequestError("Invalid filter: " + each);
+      }
+      filters[each] = req.body[each];
+    }
+    const jobs = await Job.findAll(filters);
     return res.json({ jobs: jobs });
   } catch (err) {
     return next(err);

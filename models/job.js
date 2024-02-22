@@ -36,19 +36,46 @@ class Job {
   /**
    * Selects and returns jobs objects, may be passed an optional filter object
    * 
+   * filter can contain: { title, minSalary, hasEquity }
    * 
+   * @param {object} filters - optional - name and value of the given filters
    * @returns array of objects for matching jobs
    */
 
-  static async findAll() {
+  static async findAll(filters) {
+    let where = "";
+    if (filters){
+      const keys = Object.keys(filters);
+      if (keys.length !== 0){
+        let clauses = [];
+        if ("hasEquity" in filters) {
+          if (filters.hasEquity === true) {
+            where += "WHERE ";
+            clauses.push("equity > 0 ");
+          }
+        }
+        else {
+          where += "WHERE ";
+        }
+        if ("title" in filters) {
+          clauses.push("title ILIKE '%" + filters.title + "%' ");
+        }
+        if ("minSalary" in filters) {
+          clauses.push("salary >= " + filters.minSalary + " ");
+        }
+        const stringClauses = clauses.join("AND ");
+        where += stringClauses;
+      }
+    }
+    console.log(where);
     const jobsRes = await db.query(
           `SELECT id,
                 title, 
                 salary, 
                 equity, 
                 company_handle AS "companyHandle"
-           FROM jobs
-           ORDER BY title`);
+           FROM jobs ` + where + 
+           `ORDER BY title`);
     return jobsRes.rows;
   }
 

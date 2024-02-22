@@ -115,6 +115,55 @@ describe("GET /jobs", function () {
     });
   });
 
+  test("works: empty filter", async function () {
+    const resp = await request(app).get("/jobs").send({});
+    expect(resp.body).toEqual({
+      jobs:
+          [
+            {
+                title: "j1",
+                salary: 100,
+                equity: "0.2",
+                companyHandle: "c1",
+                id: expect.any(Number)
+            },
+            {
+                title: "j2",
+                salary: 200,
+                equity: "0.3",
+                companyHandle: "c2",
+                id: expect.any(Number)
+            },
+            {
+                title: "j3",
+                salary: 300,
+                equity: "0.4",
+                companyHandle: "c3",
+                id: expect.any(Number)
+            }
+          ],
+    });
+  });
+
+  test("works: title, salary, and equity filter", async function () {
+    const resp = await request(app).get("/jobs").send(
+        { title: "j1",
+            minSalary: 100,
+            hasEquity: true});
+    expect(resp.body).toEqual({
+      jobs:
+          [
+            {
+                title: "j1",
+                salary: 100,
+                equity: "0.2",
+                companyHandle: "c1",
+                id: expect.any(Number)
+            }
+          ],
+    });
+  });
+
   test("fails: test next() handler", async function () {
     // there's no normal failure event which will cause this route to fail ---
     // thus making it hard to test that the error-handler works with it. This
